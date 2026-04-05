@@ -1,0 +1,125 @@
+├── app
+│   ├── config
+│   │   └── appMeta.ts
+│   ├── providers
+│   │   ├── AppProviders.tsx
+│   │   └── index.ts
+│   ├── routing
+│   │   └── destinations.ts
+│   ├── styles
+│   │   └── shell.css
+│   └── App.tsx
+├── calculations
+│   ├── contracts
+│   │   └── CalculationCatalog.ts
+│   ├── engine
+│   │   ├── createCalculationSnapshot.ts
+│   │   ├── dateMath.ts
+│   │   ├── frequency.ts
+│   │   └── types.ts
+│   ├── selectors
+│   │   └── createCalculationSnapshotSelector.ts
+│   ├── stubs
+│   │   └── notImplemented.ts
+│   ├── testing
+│   │   └── representativeScenario.ts
+│   └── index.ts
+├── domain
+│   ├── models
+│   │   ├── AppPreferences.ts
+│   │   ├── ForecastSettings.ts
+│   │   ├── PaymentRecord.ts
+│   │   └── RecurringBill.ts
+│   ├── types
+│   │   └── common.ts
+│   └── index.ts
+├── editing
+│   ├── components
+│   │   ├── BillEditorPanel.tsx
+│   │   ├── ForecastSettingsEditorPanel.tsx
+│   │   └── PaymentEditorPanel.tsx
+│   ├── forms
+│   │   ├── billForm.ts
+│   │   ├── forecastForm.ts
+│   │   └── paymentForm.ts
+│   ├── utils
+│   │   └── createId.ts
+│   └── index.ts
+├── persistence
+│   ├── contracts
+│   │   ├── AppPersistenceAdapter.ts
+│   │   └── PersistedAppStateEnvelope.ts
+│   ├── local
+│   │   ├── getLocalStorage.ts
+│   │   ├── LocalStorageAppPersistenceAdapter.ts
+│   │   └── storageKeys.ts
+│   ├── react
+│   │   ├── AppPersistenceBoundary.tsx
+│   │   ├── AppPersistenceContext.tsx
+│   │   └── index.ts
+│   ├── serialization
+│   │   └── parsePersistedAppState.ts
+│   └── index.ts
+├── screens
+│   ├── bills
+│   │   ├── billRows.ts
+│   │   └── BillsScreen.tsx
+│   ├── calendar
+│   │   └── CalendarScreen.tsx
+│   ├── dashboard
+│   │   └── DashboardScreen.tsx
+│   ├── forecast
+│   │   └── ForecastScreen.tsx
+│   └── settings
+│       └── SettingsScreen.tsx
+├── shell
+│   ├── components
+│   │   ├── CenterWorkspaceFrame.tsx
+│   │   ├── LeftNavigationFrame.tsx
+│   │   ├── RightInspectorFrame.tsx
+│   │   └── TopBarFrame.tsx
+│   └── layout
+│       └── frameContracts.ts
+├── store
+│   ├── context
+│   │   └── AppStoreContext.tsx
+│   ├── contracts
+│   │   └── AppStore.ts
+│   ├── hooks
+│   │   ├── useAppDispatch.ts
+│   │   └── useAppStore.ts
+│   ├── mutations
+│   │   └── actions.ts
+│   ├── selectors
+│   │   ├── bills.ts
+│   │   ├── payments.ts
+│   │   ├── settings.ts
+│   │   └── ui.ts
+│   ├── utils
+│   │   └── entityState.ts
+│   ├── index.ts
+│   ├── initialState.ts
+│   ├── reducer.ts
+│   ├── state.ts
+│   └── store.ts
+├── theme
+│   ├── contracts
+│   │   └── ThemeContract.ts
+│   ├── tokens
+│   │   ├── colors.ts
+│   │   ├── radius.ts
+│   │   ├── spacing.ts
+│   │   └── typography.ts
+│   └── index.ts
+├── ui
+│   └── primitives
+│       ├── Button.tsx
+│       ├── index.ts
+│       ├── Panel.tsx
+│       └── PlaceholderBlock.tsx
+├── utils
+│   ├── date.ts
+│   ├── formatCurrency.ts
+│   ├── index.ts
+│   └── invariant.ts
+└── main.tsx

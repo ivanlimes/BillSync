@@ -1,0 +1,83 @@
+- README.md
+- docs/
+  - scaffold-pass-report.md
+- index.html
+- package.json
+- public/
+- src/
+  - app/
+    - App.tsx
+    - config/
+      - appMeta.ts
+    - providers/
+      - index.ts
+    - routing/
+      - destinations.ts
+  - calculations/
+    - contracts/
+      - CalculationCatalog.ts
+    - index.ts
+    - stubs/
+      - notImplemented.ts
+  - domain/
+    - index.ts
+    - models/
+      - AppPreferences.ts
+      - ForecastSettings.ts
+      - PaymentRecord.ts
+      - RecurringBill.ts
+    - types/
+      - common.ts
+  - main.tsx
+  - persistence/
+    - contracts/
+      - AppPersistenceAdapter.ts
+    - index.ts
+    - local/
+      - storageKeys.ts
+  - screens/
+    - bills/
+      - BillsScreen.tsx
+    - calendar/
+      - CalendarScreen.tsx
+    - dashboard/
+      - DashboardScreen.tsx
+    - forecast/
+      - ForecastScreen.tsx
+    - settings/
+      - SettingsScreen.tsx
+  - shell/
+    - components/
+      - CenterWorkspaceFrame.tsx
+      - LeftNavigationFrame.tsx
+      - RightInspectorFrame.tsx
+      - TopBarFrame.tsx
+    - layout/
+      - frameContracts.ts
+  - store/
+    - index.ts
+    - initialState.ts
+    - state.ts
+  - theme/
+    - contracts/
+      - ThemeContract.ts
+    - index.ts
+    - tokens/
+      - radius.ts
+      - spacing.ts
+      - typography.ts
+  - ui/
+    - primitives/
+      - Button.tsx
+      - Panel.tsx
+      - PlaceholderBlock.tsx
+      - index.ts
+  - utils/
+    - date.ts
+    - formatCurrency.ts
+    - index.ts
+    - invariant.ts
+- tsconfig.app.json
+- tsconfig.json
+- tsconfig.node.json
+- vite.config.ts
