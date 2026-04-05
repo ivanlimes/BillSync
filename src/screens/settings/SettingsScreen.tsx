@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
-import { getLocalStorage } from '@/persistence/local/getLocalStorage';
-import { STORAGE_KEYS } from '@/persistence/local/storageKeys';
-import { useAppPersistenceStatus } from '@/persistence/react/AppPersistenceContext';
-import { appActions, initialAppState, selectForecastSettings, selectPreferences, useAppDispatch, useAppStore } from '@/store';
-import { Button, Panel } from '@/ui/primitives';
-import type { BillFilterKey, BillSortKey, DensityMode, ThemeMode } from '@/domain';
+import { useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { getLocalStorage } from '../../persistence/local/getLocalStorage';
+import { STORAGE_KEYS } from '../../persistence/local/storageKeys';
+import { exportBillsWorkbook, importBillsWorkbook } from '../../persistence/interop/billWorkbook';
+import { useAppPersistenceStatus } from '../../persistence/react/AppPersistenceContext';
+import { appActions, initialAppState, selectForecastSettings, selectPreferences, useAppDispatch, useAppStore } from '../../store';
+import { Button, Panel } from '../../ui/primitives';
+import type { BillFilterKey, BillSortKey, DensityMode, ThemeMode } from '../../domain';
 
 const THEME_MODE_OPTIONS: Array<{ value: ThemeMode; label: string; description: string }> = [
   { value: 'system', label: 'System', description: 'Follow the device appearance setting.' },
@@ -56,7 +57,10 @@ export function SettingsScreen() {
   const appState = useAppStore((state) => state);
   const persistenceStatus = useAppPersistenceStatus();
   const dispatch = useAppDispatch();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dataMessage, setDataMessage] = useState<string | null>(null);
+  const [importWarnings, setImportWarnings] = useState<string[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
 
   const selectedReminderDefaults = useMemo(() => new Set(preferences.reminderDefaults ?? ['7-days', '1-day']), [preferences.reminderDefaults]);
 
@@ -80,11 +84,11 @@ export function SettingsScreen() {
     dispatch(appActions.updatePreferences({ reminderDefaults: Array.from(nextValues) }));
   }
 
-  function exportLocalData() {
+  function exportJsonBackup() {
     const payload = JSON.stringify(appState, null, 2);
 
     if (typeof window === 'undefined' || typeof document === 'undefined') {
-      setDataMessage('Export is only available in a browser session.');
+      setDataMessage('JSON export is only available in a browser session.');
       return;
     }
 
@@ -95,7 +99,54 @@ export function SettingsScreen() {
     anchor.download = 'family-monthly-bills-local-data.json';
     anchor.click();
     window.URL.revokeObjectURL(url);
-    setDataMessage('Local data export created.');
+    setImportWarnings([]);
+    setDataMessage('JSON backup export created.');
+  }
+
+  async function exportWorkbook() {
+    try {
+      await exportBillsWorkbook(appState);
+      setImportWarnings([]);
+      setDataMessage('Bills workbook export created.');
+    } catch (error) {
+      setDataMessage(error instanceof Error ? error.message : 'Bills workbook export failed.');
+    }
+  }
+
+  function openWorkbookImportPicker() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleWorkbookImport(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setIsImporting(true);
+    setImportWarnings([]);
+
+    try {
+      const result = await importBillsWorkbook(file, appState);
+      dispatch(appActions.replaceState(result.nextState));
+
+      const warningMessages = result.summary.warnings.slice(0, 5).map((warning) => `Row ${warning.rowNumber}: ${warning.message}`);
+      setImportWarnings(warningMessages);
+
+      if (result.summary.processedRows === 0) {
+        setDataMessage('No bill rows were found in the selected workbook.');
+      } else {
+        setDataMessage(
+          `Workbook import complete: ${result.summary.processedRows} rows processed · ${result.summary.updatedCount} updated · ${result.summary.addedCount} added · ${result.summary.skippedCount} skipped.`,
+        );
+      }
+    } catch (error) {
+      setDataMessage(error instanceof Error ? error.message : 'Bills workbook import failed.');
+    } finally {
+      event.target.value = '';
+      setIsImporting(false);
+    }
   }
 
   function resetLocalData() {
@@ -113,6 +164,7 @@ export function SettingsScreen() {
       }),
     );
 
+    setImportWarnings([]);
     setDataMessage('Local data cleared and canonical state reset to the initial V1 baseline.');
   }
 
@@ -304,7 +356,8 @@ export function SettingsScreen() {
             <div>
               <h3>Local data controls</h3>
               <p className="screen-panel__caption">
-                Keep local-first controls obvious and reversible. Do not turn this into a backup admin console.
+                Keep local-first controls obvious and reversible. Workbook import updates bills only and leaves payments,
+                forecast settings, preferences, and the rest of the shell untouched.
               </p>
             </div>
           </div>
@@ -318,19 +371,48 @@ export function SettingsScreen() {
               <dt>Persistence</dt>
               <dd>{persistenceStatus.error ? persistenceStatus.error : 'Healthy local storage round-trip'}</dd>
             </div>
+            <div className="settings-data-summary__row">
+              <dt>Workbook import</dt>
+              <dd>Match by Bill ID first, then Bill Name. Missing rows do not delete existing bills.</dd>
+            </div>
           </dl>
 
-          <div className="screen-inline-actions">
-            <Button variant="primary" onClick={exportLocalData}>
-              Export local data
-            </Button>
-            <Button onClick={resetLocalData}>Reset local data</Button>
-            <Button variant="disabled" disabled aria-disabled="true">
-              Import/restore — later
-            </Button>
+          <div className="settings-preview-callout">
+            <strong>Spreadsheet sync rules</strong>
+            <span>
+              Export the current workbook, edit the Bills sheet in Excel, then import it back. Imported rows upsert bill
+              records only. This path does not mutate payments or overwrite app preferences.
+            </span>
           </div>
 
+          <div className="screen-inline-actions">
+            <Button variant="primary" onClick={exportWorkbook}>
+              Export bills workbook
+            </Button>
+            <Button onClick={openWorkbookImportPicker} disabled={isImporting}>
+              {isImporting ? 'Importing workbook…' : 'Import bills workbook'}
+            </Button>
+            <Button onClick={exportJsonBackup}>Export JSON backup</Button>
+            <Button onClick={resetLocalData}>Reset local data</Button>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            hidden
+            onChange={handleWorkbookImport}
+          />
+
           {dataMessage ? <p className="settings-help-text">{dataMessage}</p> : null}
+
+          {importWarnings.length > 0 ? (
+            <ul className="screen-scaffold__list settings-import-warning-list">
+              {importWarnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          ) : null}
         </Panel>
 
         <Panel className="settings-panel" tone="surface" padding="lg">
@@ -346,7 +428,7 @@ export function SettingsScreen() {
           <ul className="screen-scaffold__list settings-guardrail-list">
             <li>Background personalization stays behind the shell, not inside dense financial surfaces.</li>
             <li>Reminder defaults are stored here without creating notification plumbing early.</li>
-            <li>Import/restore remains intentionally narrow until hardening proves the schema is stable.</li>
+            <li>Workbook import is narrow by design: it updates bill records without reopening other layers.</li>
             <li>Default sort and filter live here as app preferences, not as one-off screen hacks.</li>
           </ul>
         </Panel>

@@ -1,0 +1,20 @@
+Replace only these files in the root of your existing repo:
+
+- package.json
+- package-lock.json
+- src/persistence/interop/billWorkbook.ts
+- src/screens/settings/SettingsScreen.tsx
+- src/app/styles/shell.css
+- docs/import-export-pass-report.md
+
+Do NOT copy the zip itself into the repo.
+Do NOT delete the .git folder.
+Do NOT replace the whole repo if you are only applying this import/export pass.
+
+After replacing these files, run:
+
+npm install
+npm run build
+npm run dev
+
+Then commit and push.

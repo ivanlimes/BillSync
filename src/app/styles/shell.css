@@ -1948,6 +1948,18 @@ h4 {
   margin: 0;
 }
 
+.settings-import-warning-list {
+  margin-top: 0;
+}
+
+.settings-import-warning-list li {
+  color: #92400e;
+}
+
+.app-shell[data-theme='dark'] .settings-import-warning-list li {
+  color: #ffd9ae;
+}
+
 @media (max-width: 72rem) {
   .settings-grid,
   .settings-grid--data,
